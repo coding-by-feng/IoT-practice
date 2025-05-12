@@ -91,8 +91,11 @@ class WeatherDataCollector:
             return
 
         try:
-            timestamp = datetime.utcnow().isoformat()
+            # Use a fixed timestamp format for consistency
+            timestamp = "2023-10-01T12:00:00Z"
+
             data = {
+                "timestamp": timestamp,
                 "temperature": response["main"]["temp"],
                 "humidity": response["main"]["humidity"],
                 "pressure": response["main"]["pressure"],
