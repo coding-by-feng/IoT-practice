@@ -42,6 +42,7 @@ class WeatherDataCollector:
 
         try:
             self.mqtt_client.connect(mqtt_broker, mqtt_port)
+            logging.info(f"Connected to MQTT broker at {mqtt_broker}:{mqtt_port}")
         except Exception as e:
             logging.error(f"MQTT Connection Error: {e}")
             raise
@@ -51,8 +52,11 @@ class WeatherDataCollector:
         self.cursor = self.conn.cursor()
         self._create_table()
 
+        logging.info(f"WeatherDataCollector initialized for city: {self.city}, MQTT broker: {mqtt_broker}")
+
     def _create_table(self):
         """Create weather data table if not exists"""
+        logging.info("Checking/creating weather data table in database")
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS weather_data (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,12 +70,15 @@ class WeatherDataCollector:
             )
         ''')
         self.conn.commit()
+        logging.info("Weather data table checked/created in database")
 
     def fetch_weather_data(self):
         """Fetch current weather data from OpenWeatherMap API"""
+        logging.info(f"Fetching weather data for {self.city}")
         try:
             response = requests.get(self.current_url, timeout=10)
             response.raise_for_status()  # Raise an exception for bad responses
+            logging.info(f"Weather data fetched successfully for {self.city}")
             return response.json()
         except requests.RequestException as e:
             logging.error(f"API Request Error: {e}")
@@ -80,6 +87,7 @@ class WeatherDataCollector:
     def process_and_store_data(self, response):
         """Process weather data and store in database and MQTT"""
         if not response:
+            logging.warning("No weather data to process")
             return
 
         try:
@@ -94,6 +102,7 @@ class WeatherDataCollector:
             }
 
             # Insert into SQLite
+            logging.info(f"Inserting weather data into database for {data['location']}")
             self.cursor.execute(
                 """INSERT INTO weather_data 
                 (timestamp, temperature, humidity, pressure, location, 
@@ -106,6 +115,7 @@ class WeatherDataCollector:
             self.conn.commit()
 
             # Publish to MQTT
+            logging.info(f"Publishing weather data to MQTT for {data['location']}")
             self.mqtt_client.publish("/weather/current", json.dumps(data))
             logging.info(f"Weather data for {data['location']} processed successfully")
 
@@ -116,19 +126,26 @@ class WeatherDataCollector:
 
     def collect_weather_data(self):
         """Main method to collect and process weather data"""
+        logging.info("Starting weather data collection")
         weather_response = self.fetch_weather_data()
         self.process_and_store_data(weather_response)
+        logging.info("Weather data collection completed")
 
     def close_connections(self):
         """Close database and MQTT connections"""
         try:
+            logging.info("Disconnecting from MQTT broker")
             self.mqtt_client.disconnect()
+            logging.info("Disconnected from MQTT broker")
+            logging.info("Closing database connection")
             self.conn.close()
+            logging.info("Database connection closed")
         except Exception as e:
             logging.error(f"Error closing connections: {e}")
 
 
 def main():
+    logging.info("Weather data collection script started")
     try:
         # Use environment variables for configuration
         collector = WeatherDataCollector(
@@ -140,6 +157,7 @@ def main():
         logging.error(f"Unhandled Error: {e}")
     finally:
         collector.close_connections()
+    logging.info("Weather data collection script completed")
 
 
 if __name__ == "__main__":
