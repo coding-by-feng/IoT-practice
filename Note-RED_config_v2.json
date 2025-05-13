@@ -1,0 +1,525 @@
+[
+    {
+        "id": "dcc940b845ec1138",
+        "type": "tab",
+        "label": "IoT Weather System V2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "c6b42b7f42d406a0",
+        "type": "mqtt in",
+        "z": "dcc940b845ec1138",
+        "name": "Current Weather",
+        "topic": "/weather/current",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "20b23af4cf8d4823",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 180,
+        "y": 160,
+        "wires": [
+            [
+                "60a34910149f54cd",
+                "7ee6c22bbec2e513"
+            ]
+        ]
+    },
+    {
+        "id": "ded6f3bce7cd3ba6",
+        "type": "mqtt out",
+        "z": "dcc940b845ec1138",
+        "name": "",
+        "topic": "gprado/iot2025",
+        "qos": "2",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "1e54ea25de873f90",
+        "x": 440,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "60a34910149f54cd",
+        "type": "debug",
+        "z": "dcc940b845ec1138",
+        "name": "Show CW JSON",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 450,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "741d3f6bda9172c9",
+        "type": "inject",
+        "z": "dcc940b845ec1138",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "hello world",
+        "payloadType": "str",
+        "x": 200,
+        "y": 80,
+        "wires": [
+            [
+                "ded6f3bce7cd3ba6"
+            ]
+        ]
+    },
+    {
+        "id": "048abfd17ef9878f",
+        "type": "debug",
+        "z": "dcc940b845ec1138",
+        "name": "Show FW JSON",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 450,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "1d3086b3dba07357",
+        "type": "mqtt in",
+        "z": "dcc940b845ec1138",
+        "name": "Forecast Weather",
+        "topic": "/weather/forecast",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "20b23af4cf8d4823",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 180,
+        "y": 240,
+        "wires": [
+            [
+                "048abfd17ef9878f",
+                "32bb3c3a5e982ad2"
+            ]
+        ]
+    },
+    {
+        "id": "7ee6c22bbec2e513",
+        "type": "function",
+        "z": "dcc940b845ec1138",
+        "name": "Process Current Weather",
+        "func": "// Prepare the data for dashboard display\nif (msg.payload) {\n    // We're assuming a similar structure to the forecast items\n    // Create formatted message for text display\n    msg.payload = {\n        location: msg.payload.location || 'Unknown',\n        temperature: msg.payload.temperature ? msg.payload.temperature.toFixed(1) + '°C' : 'N/A',\n        humidity: msg.payload.humidity ? msg.payload.humidity + '%' : 'N/A',\n        weather: msg.payload.weather_description || 'Unknown',\n        wind: msg.payload.wind_speed ? msg.payload.wind_speed.toFixed(1) + ' m/s' : 'N/A',\n        pressure: msg.payload.pressure ? msg.payload.pressure + ' hPa' : 'N/A',\n        timestamp: msg.payload.forecast_time || 'Unknown'\n    };\n    \n    // Create additional outputs if needed\n    // For example, data for gauges\n    msg.temperature = msg.payload.temperature;\n    msg.humidity = msg.payload.humidity;\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 120,
+        "wires": [
+            [
+                "99b8db7c7de8a95e"
+            ]
+        ]
+    },
+    {
+        "id": "32bb3c3a5e982ad2",
+        "type": "function",
+        "z": "dcc940b845ec1138",
+        "name": "Process Forecast Data",
+        "func": "// Process forecast data for dashboard visualization\nif (msg.payload && msg.payload.forecast_items) {\n    const forecasts = msg.payload.forecast_items;\n    \n    // Extract data for temperature chart\n    const tempChartData = {\n        labels: [],\n        series: ['Temperature'],\n        data: [[]]\n    };\n    \n    // Extract data for weather table\n    const dailyForecasts = [];\n    \n    // Extract rain forecast data\n    const rainChartData = {\n        labels: [],\n        series: ['Rain (mm)'],\n        data: [[]]\n    };\n    \n    // Group forecasts by day\n    let currentDay = '';\n    let dailySummary = null;\n    \n    forecasts.forEach(forecast => {\n        // Extract date and time components\n        const dateTime = forecast.forecast_time;\n        const date = dateTime.split(' ')[0];\n        const time = dateTime.split(' ')[1].substring(0, 5);\n        \n        // Process data for temperature chart (every 6 hours)\n        if (time === '00:00' || time === '06:00' || time === '12:00' || time === '18:00') {\n            tempChartData.labels.push(date + ' ' + time);\n            tempChartData.data[0].push(forecast.temperature);\n            \n            // Also add to rain chart\n            rainChartData.labels.push(date + ' ' + time);\n            rainChartData.data[0].push(forecast.rain_3h || 0);\n        }\n        \n        // Create daily summary (take noon forecast as representative)\n        if (time === '12:00') {\n            dailyForecasts.push({\n                date: date,\n                temperature: forecast.temperature.toFixed(1) + '°C',\n                description: forecast.weather_description,\n                humidity: forecast.humidity + '%',\n                wind: forecast.wind_speed.toFixed(1) + ' m/s',\n                rain: forecast.rain_3h ? forecast.rain_3h.toFixed(2) + ' mm' : '0 mm'\n            });\n        }\n    });\n    \n    // Prepare multiple outputs\n    const outputs = {\n        tempChart: tempChartData,\n        rainChart: rainChartData,\n        dailyForecast: dailyForecasts,\n        location: msg.payload.location || 'Unknown'\n    };\n    \n    // Save original detailed data for possible other uses\n    outputs.rawData = msg.payload;\n    \n    return { payload: outputs };\n} else {\n    return { payload: \"Invalid forecast data format\" };\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 300,
+        "wires": [
+            [
+                "d2d8e13ba1a33ba9"
+            ]
+        ]
+    },
+    {
+        "id": "99b8db7c7de8a95e",
+        "type": "ui_template",
+        "z": "dcc940b845ec1138",
+        "group": "4da2a3f4a1b2b38d",
+        "name": "Current Weather Display",
+        "order": 1,
+        "width": "6",
+        "height": "5",
+        "format": "<div class=\"current-weather-card\">\n    <div class=\"weather-header\">\n        <h2>Current Weather</h2>\n        <h3>{{msg.payload.location}}</h3>\n    </div>\n    <div class=\"weather-content\">\n        <div class=\"temperature-display\">\n            <div class=\"temperature\">{{msg.payload.temperature}}</div>\n            <div class=\"weather-condition\">{{msg.payload.weather}}</div>\n        </div>\n        <div class=\"weather-details\">\n            <div class=\"detail-item\">\n                <span class=\"detail-icon\">💧</span>\n                <span class=\"detail-label\">Humidity:</span>\n                <span class=\"detail-value\">{{msg.payload.humidity}}</span>\n            </div>\n            <div class=\"detail-item\">\n                <span class=\"detail-icon\">🌬️</span>\n                <span class=\"detail-label\">Wind:</span>\n                <span class=\"detail-value\">{{msg.payload.wind}}</span>\n            </div>\n            <div class=\"detail-item\">\n                <span class=\"detail-icon\">🔄</span>\n                <span class=\"detail-label\">Pressure:</span>\n                <span class=\"detail-value\">{{msg.payload.pressure}}</span>\n            </div>\n        </div>\n    </div>\n    <div class=\"weather-footer\">\n        <span class=\"update-time\">Last updated: {{msg.payload.timestamp}}</span>\n    </div>\n</div>\n\n<style>\n    .current-weather-card {\n        padding: 16px;\n        background: linear-gradient(135deg, #72b1e6, #4a8fcb);\n        color: white;\n        border-radius: 12px;\n        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);\n        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n        margin: 0;\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n    }\n    \n    .weather-header {\n        margin-bottom: 16px;\n        text-align: center;\n    }\n    \n    .weather-header h2 {\n        margin: 0;\n        font-size: 1.6em;\n        font-weight: 600;\n        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);\n    }\n    \n    .weather-header h3 {\n        margin: 6px 0 0 0;\n        font-size: 1.2em;\n        font-weight: 400;\n        opacity: 0.9;\n    }\n    \n    .weather-content {\n        display: flex;\n        flex-direction: column;\n        flex-grow: 1;\n        gap: 20px;\n    }\n    \n    .temperature-display {\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        margin-bottom: 12px;\n    }\n    \n    .temperature {\n        font-size: 3.2em;\n        font-weight: 700;\n        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);\n        margin-bottom: 5px;\n    }\n    \n    .weather-condition {\n        font-size: 1.4em;\n        text-transform: capitalize;\n        opacity: 0.9;\n    }\n    \n    .weather-details {\n        display: flex;\n        flex-direction: column;\n        gap: 12px;\n        background-color: rgba(255, 255, 255, 0.15);\n        border-radius: 10px;\n        padding: 15px;\n    }\n    \n    .detail-item {\n        display: flex;\n        align-items: center;\n    }\n    \n    .detail-icon {\n        font-size: 1.2em;\n        margin-right: 10px;\n        min-width: 24px;\n    }\n    \n    .detail-label {\n        font-weight: 500;\n        min-width: 100px;\n    }\n    \n    .detail-value {\n        font-weight: 600;\n    }\n    \n    .weather-footer {\n        margin-top: 16px;\n        text-align: center;\n        font-size: 0.85em;\n        opacity: 0.8;\n    }\n    \n    .update-time {\n        background-color: rgba(0, 0, 0, 0.15);\n        padding: 5px 12px;\n        border-radius: 15px;\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 680,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d2d8e13ba1a33ba9",
+        "type": "split",
+        "z": "dcc940b845ec1138",
+        "name": "Split forecast data",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "topic",
+        "x": 660,
+        "y": 300,
+        "wires": [
+            [
+                "c4bea12d8767fa7e"
+            ]
+        ]
+    },
+    {
+        "id": "c4bea12d8767fa7e",
+        "type": "function",
+        "z": "dcc940b845ec1138",
+        "name": "Route forecast components",
+        "func": "// This function routes different parts of the forecast data to appropriate dashboard nodes\nconst payload = msg.payload;\n\n// Determine where to send each part\nif (payload.tempChart) {\n    // Temperature chart data\n    return [{ payload: payload.tempChart }, null, null];\n} else if (payload.rainChart) {\n    // Rain chart data\n    return [null, { payload: payload.rainChart }, null];\n} else if (payload.dailyForecast) {\n    // Daily forecast table data\n    return [null, null, { payload: payload.dailyForecast }];\n} else {\n    // Handle other data or log errors\n    node.warn(\"Unrecognized payload format\");\n    return [null, null, null];\n}\n",
+        "outputs": 3,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 300,
+        "wires": [
+            [
+                "fbb94831b46e9762"
+            ],
+            [
+                "a8f1f51b4fd2b68a"
+            ],
+            [
+                "e8e5a6a0cf47c5c4"
+            ]
+        ]
+    },
+    {
+        "id": "fbb94831b46e9762",
+        "type": "ui_chart",
+        "z": "dcc940b845ec1138",
+        "name": "Temperature Forecast",
+        "group": "0d9d8ed71ef3a909",
+        "order": 2,
+        "width": "12",
+        "height": "6",
+        "label": "Temperature Forecast (°C)",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm",
+        "interpolate": "bezier",
+        "nodata": "Waiting for forecast data...",
+        "dot": true,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1120,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a8f1f51b4fd2b68a",
+        "type": "ui_chart",
+        "z": "dcc940b845ec1138",
+        "name": "Rainfall Forecast",
+        "group": "0d9d8ed71ef3a909",
+        "order": 3,
+        "width": "12",
+        "height": "5",
+        "label": "Rainfall Forecast (mm/3h)",
+        "chartType": "bar",
+        "legend": "false",
+        "xformat": "HH:mm",
+        "interpolate": "linear",
+        "nodata": "No rainfall forecast",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1e88e5",
+            "#90caf9",
+            "#42a5f5",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1110,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e8e5a6a0cf47c5c4",
+        "type": "ui_template",
+        "z": "dcc940b845ec1138",
+        "group": "6b0cba5b953a90ef",
+        "name": "Daily Forecast Table",
+        "order": 4,
+        "width": "12",
+        "height": "7",
+        "format": "<div class=\"forecast-container\">\n    <h2 class=\"forecast-title\">5-Day Weather Forecast</h2>\n    <div class=\"forecast-table-wrapper\">\n        <table class=\"forecast-table\">\n            <thead>\n                <tr>\n                    <th>Date</th>\n                    <th>Temp</th>\n                    <th>Conditions</th>\n                    <th>Humidity</th>\n                    <th>Wind</th>\n                    <th>Rain</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr ng-repeat=\"day in msg.payload\" ng-class=\"{ 'rain-day': day.description.includes('rain') }\">\n                    <td class=\"date-cell\">{{day.date}}</td>\n                    <td class=\"temp-cell\">{{day.temperature}}</td>\n                    <td class=\"conditions-cell\">\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('clear')\">☀️</span>\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('cloud')\">⛅</span>\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('rain')\">🌧️</span>\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('snow')\">❄️</span>\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('storm')\">⛈️</span>\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('fog') || day.description.includes('mist')\">🌫️</span>\n                        <span class=\"conditions-text\">{{day.description}}</span>\n                    </td>\n                    <td class=\"humidity-cell\">{{day.humidity}}</td>\n                    <td class=\"wind-cell\">{{day.wind}}</td>\n                    <td class=\"rain-cell\">{{day.rain}}</td>\n                </tr>\n            </tbody>\n        </table>\n    </div>\n    <div class=\"forecast-legend\">\n        <div class=\"legend-item\"><span class=\"clear-icon\">☀️</span> Clear</div>\n        <div class=\"legend-item\"><span class=\"clouds-icon\">⛅</span> Cloudy</div>\n        <div class=\"legend-item\"><span class=\"rain-icon\">🌧️</span> Rain</div>\n    </div>\n</div>\n\n<style>\n    .forecast-container {\n        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n        background: linear-gradient(to bottom, #f8f9fa, #e9ecef);\n        border-radius: 12px;\n        padding: 20px;\n        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n    }\n    \n    .forecast-title {\n        text-align: center;\n        margin: 0 0 20px 0;\n        color: #395B7E;\n        font-size: 1.6em;\n        font-weight: 600;\n        border-bottom: 2px solid #d1e3f6;\n        padding-bottom: 10px;\n    }\n    \n    .forecast-table-wrapper {\n        overflow-x: auto;\n        flex-grow: 1;\n    }\n    \n    .forecast-table {\n        width: 100%;\n        border-collapse: separate;\n        border-spacing: 0;\n        border-radius: 8px;\n        overflow: hidden;\n        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);\n    }\n    \n    .forecast-table th {\n        background-color: #4c87c5;\n        color: white;\n        font-weight: 600;\n        padding: 14px 10px;\n        text-align: left;\n        font-size: 1.05em;\n        position: sticky;\n        top: 0;\n    }\n    \n    .forecast-table tbody tr {\n        background-color: white;\n        transition: background-color 0.2s;\n    }\n    \n    .forecast-table tbody tr:nth-child(even) {\n        background-color: #f8fafc;\n    }\n    \n    .forecast-table tbody tr:hover {\n        background-color: #f0f7ff;\n    }\n    \n    .forecast-table td {\n        padding: 14px 10px;\n        border-bottom: 1px solid #eaedf0;\n        font-size: 1.05em;\n    }\n    \n    .date-cell {\n        font-weight: 600;\n        color: #2c3e50;\n        min-width: 100px;\n    }\n    \n    .temp-cell {\n        font-weight: 600;\n        color: #e67e22;\n        min-width: 90px;\n    }\n    \n    .conditions-cell {\n        min-width: 180px;\n        display: flex;\n        align-items: center;\n    }\n    \n    .weather-icon {\n        font-size: 1.3em;\n        margin-right: 8px;\n    }\n    \n    .conditions-text {\n        text-transform: capitalize;\n    }\n    \n    .humidity-cell, .wind-cell, .rain-cell {\n        color: #3498db;\n        min-width: 100px;\n    }\n    \n    .rain-day {\n        background-color: #f0f8ff !important;\n    }\n    \n    .forecast-legend {\n        display: flex;\n        justify-content: center;\n        gap: 20px;\n        margin-top: 15px;\n        font-size: 0.9em;\n        color: #555;\n    }\n    \n    .legend-item {\n        display: flex;\n        align-items: center;\n        gap: 5px;\n    }\n    \n    .clear-icon, .clouds-icon, .rain-icon {\n        font-size: 1.2em;\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1110,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3ac4e9e79fb6d9d9",
+        "type": "inject",
+        "z": "dcc940b845ec1138",
+        "name": "Test Forecast Data",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "/weather/forecast",
+        "payload": "{\"location\":\"Auckland\",\"timestamp\":\"2023-10-01T12:00:00Z\",\"forecast_count\":40,\"forecast_items\":[{\"forecast_time\":\"2025-05-13 03:00:00\",\"timestamp\":\"2023-10-01T12:00:00Z\",\"temperature\":16.69,\"humidity\":77,\"pressure\":1022,\"location\":\"Auckland\",\"weather_description\":\"broken clouds\",\"wind_speed\":3.98,\"clouds_percent\":73,\"rain_3h\":0,\"snow_3h\":0,\"visibility\":10000,\"device_label\":\"RPi_WeatherStation\"},{\"forecast_time\":\"2025-05-13 06:00:00\",\"timestamp\":\"2023-10-01T12:00:00Z\",\"temperature\":15.67,\"humidity\":77,\"pressure\":1022,\"location\":\"Auckland\",\"weather_description\":\"overcast clouds\",\"wind_speed\":4.24,\"clouds_percent\":86,\"rain_3h\":0,\"snow_3h\":0,\"visibility\":10000,\"device_label\":\"RPi_WeatherStation\"},{\"forecast_time\":\"2025-05-13 09:00:00\",\"timestamp\":\"2023-10-01T12:00:00Z\",\"temperature\":14.87,\"humidity\":79,\"pressure\":1021,\"location\":\"Auckland\",\"weather_description\":\"overcast clouds\",\"wind_speed\":3.99,\"clouds_percent\":100,\"rain_3h\":0,\"snow_3h\":0,\"visibility\":10000,\"device_label\":\"RPi_WeatherStation\"},{\"forecast_time\":\"2025-05-13 12:00:00\",\"timestamp\":\"2023-10-01T12:00:00Z\",\"temperature\":14.53,\"humidity\":84,\"pressure\":1021,\"location\":\"Auckland\",\"weather_description\":\"light rain\",\"wind_speed\":4.6,\"clouds_percent\":100,\"rain_3h\":0.16,\"snow_3h\":0,\"visibility\":10000,\"device_label\":\"RPi_WeatherStation\"}]}",
+        "payloadType": "json",
+        "x": 180,
+        "y": 300,
+        "wires": [
+            [
+                "32bb3c3a5e982ad2"
+            ]
+        ]
+    },
+    {
+        "id": "e49fc0fb1c1e5cbe",
+        "type": "inject",
+        "z": "dcc940b845ec1138",
+        "name": "Test Current Weather",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "/weather/current",
+        "payload": "{\"forecast_time\":\"2025-05-13 03:00:00\",\"timestamp\":\"2023-10-01T12:00:00Z\",\"temperature\":16.69,\"humidity\":77,\"pressure\":1022,\"location\":\"Auckland\",\"weather_description\":\"broken clouds\",\"wind_speed\":3.98,\"clouds_percent\":73,\"rain_3h\":0,\"snow_3h\":0,\"visibility\":10000,\"device_label\":\"RPi_WeatherStation\"}",
+        "payloadType": "json",
+        "x": 190,
+        "y": 120,
+        "wires": [
+            [
+                "7ee6c22bbec2e513"
+            ]
+        ]
+    },
+    {
+        "id": "20b23af4cf8d4823",
+        "type": "mqtt-broker",
+        "name": "Personal IoT Broker",
+        "broker": "localhost",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "1e54ea25de873f90",
+        "type": "mqtt-broker",
+        "name": "emqx-test",
+        "broker": "broker.emqx.io",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "4da2a3f4a1b2b38d",
+        "type": "ui_group",
+        "name": "Current Conditions",
+        "tab": "f2f8e5c5b53ac3a5",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": "custom-group"
+    },
+    {
+        "id": "0d9d8ed71ef3a909",
+        "type": "ui_group",
+        "name": "Weather Charts",
+        "tab": "f2f8e5c5b53ac3a5",
+        "order": 2,
+        "disp": true,
+        "width": "12",
+        "collapse": false,
+        "className": "custom-group"
+    },
+    {
+        "id": "6b0cba5b953a90ef",
+        "type": "ui_group",
+        "name": "Daily Forecast",
+        "tab": "f2f8e5c5b53ac3a5",
+        "order": 3,
+        "disp": true,
+        "width": "12",
+        "collapse": false,
+        "className": "custom-group"
+    },
+    {
+        "id": "f2f8e5c5b53ac3a5",
+        "type": "ui_tab",
+        "name": "Weather Dashboard",
+        "icon": "wi-day-sunny",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "af36df2a3c726ef1",
+        "type": "ui_template",
+        "z": "dcc940b845ec1138",
+        "group": "f2f8e5c5b53ac3a5",
+        "name": "Dashboard Styling",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<style>\n    /* Main Dashboard Styling */\n    body.nr-dashboard-theme md-content md-card {\n        background-color: #ffffff;\n        border-radius: 12px;\n        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);\n        overflow: hidden;\n        margin-bottom: 16px;\n    }\n    \n    /* Group titles styling */\n    .custom-group .nr-dashboard-cardtitle {\n        background: linear-gradient(135deg, #4a8fcb, #62a5dd);\n        color: white !important;\n        padding: 14px 16px;\n        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n        font-size: 1.3em;\n        font-weight: 500;\n        text-transform: none;\n        border-bottom: none;\n        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);\n    }\n    \n    /* Improve chart styling */\n    .nr-dashboard-chart {\n        padding: 16px;\n        background-color: white;\n    }\n    \n    .nr-dashboard-chart .ct-label {\n        font-size: 12px;\n        color: #555;\n    }\n    \n    .ct-grid {\n        stroke: rgba(0, 0, 0, 0.1);\n        stroke-width: 1px;\n    }\n    \n    /* Improve overall spacing */\n    .layout-row>.flex, .layout-row>.flex {\n        margin: 8px;\n    }\n    \n    /* Dashboard background */\n    #container {\n        background-color: #f8f9fb;\n    }\n    \n    /* Dashboard title */\n    .md-toolbar-tools h1 {\n        font-size: 1.5em !important;\n        font-weight: 600 !important;\n        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;\n    }\n    \n    .md-toolbar-tools {\n        background: linear-gradient(135deg, #3779b5, #4d93cc);\n        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);\n    }\n    \n    /* Make weather charts nicer */\n    #chart {\n        fill: none;\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "global",
+        "className": "",
+        "x": 1120,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    }
+]

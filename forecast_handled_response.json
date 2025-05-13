@@ -1,0 +1,37 @@
+{
+    "location": "Auckland",
+    "timestamp": "2023-10-01T12:00:00Z",
+    "forecast_count": 40,
+    "forecast_items": [
+        {
+            "forecast_time": "2025-05-13 03:00:00",
+            "timestamp": "2023-10-01T12:00:00Z",
+            "temperature": 16.69,
+            "humidity": 77,
+            "pressure": 1022,
+            "location": "Auckland",
+            "weather_description": "broken clouds",
+            "wind_speed": 3.98,
+            "clouds_percent": 73,
+            "rain_3h": 0,
+            "snow_3h": 0,
+            "visibility": 10000,
+            "device_label": "RPi_WeatherStation"
+        },
+        {
+            "forecast_time": "2025-05-13 06:00:00",
+            "timestamp": "2023-10-01T12:00:00Z",
+            "temperature": 15.67,
+            "humidity": 77,
+            "pressure": 1022,
+            "location": "Auckland",
+            "weather_description": "overcast clouds",
+            "wind_speed": 4.24,
+            "clouds_percent": 86,
+            "rain_3h": 0,
+            "snow_3h": 0,
+            "visibility": 10000,
+            "device_label": "RPi_WeatherStation"
+        }
+    ]
+}

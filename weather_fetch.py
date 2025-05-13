@@ -1,3 +1,4 @@
+import sys
 import os
 import logging
 import requests
@@ -277,6 +278,12 @@ class WeatherDataCollector:
         # Collect forecast data
         forecast_response = self.fetch_forecast_data()
         self.process_and_store_forecast_data(forecast_response)
+        
+        # Analyze and publish alarms based on collected data
+        if weather_response and forecast_response:
+            self.analyze_and_publish_alarms(weather_response, forecast_response)
+        else:
+            logging.warning("Cannot analyze weather alarms due to missing data")
 
         logging.info("Weather data collection completed")
 
@@ -292,6 +299,240 @@ class WeatherDataCollector:
         except Exception as e:
             logging.error(f"Error closing connections: {e}")
 
+    def analyze_and_publish_alarms(self, current_data, forecast_data):
+        """
+        Analyze weather data for high-risk conditions and publish alarms
+        
+        Args:
+            current_data: Current weather data from API
+            forecast_data: Forecast weather data from API
+        """
+        logging.info("Analyzing weather data for potential risks and health alarms")
+        
+        if not current_data or not forecast_data:
+            logging.warning("Incomplete data for alarm analysis")
+            return
+        
+        alarms = []
+        location = current_data["name"]
+        
+        # Set Auckland time zone
+        auckland_tz = pytz.timezone('Pacific/Auckland')
+        # Get current time in Auckland
+        timestamp = datetime.now(auckland_tz).strftime("%Y-%m-%d %H:%M:%S")
+        
+        # ----- Current Weather Alarms -----
+        
+        # Temperature alarms - extreme heat
+        if current_data["main"]["temp"] > 35:
+            alarms.append({
+                "type": "EXTREME_HEAT",
+                "severity": "high",
+                "message": f"Extreme heat warning: Temperature at {current_data['main']['temp']}°C",
+                "health_impact": "Risk of heat stroke and dehydration, stay hydrated and avoid sun exposure"
+            })
+        elif current_data["main"]["temp"] > 30:
+            alarms.append({
+                "type": "HIGH_TEMPERATURE",
+                "severity": "medium",
+                "message": f"High temperature alert: {current_data['main']['temp']}°C",
+                "health_impact": "Stay hydrated and avoid prolonged sun exposure"
+            })
+        
+        # Temperature alarms - extreme cold
+        if current_data["main"]["temp"] < 0:
+            alarms.append({
+                "type": "FREEZING",
+                "severity": "high",
+                "message": f"Freezing temperature warning: {current_data['main']['temp']}°C",
+                "health_impact": "Risk of hypothermia and frostbite, stay warm and limit time outdoors"
+            })
+        elif current_data["main"]["temp"] < 5:
+            alarms.append({
+                "type": "LOW_TEMPERATURE",
+                "severity": "medium",
+                "message": f"Low temperature alert: {current_data['main']['temp']}°C",
+                "health_impact": "Dress warmly and be cautious of icy conditions"
+            })
+        
+        # Wind alarms
+        if current_data["wind"]["speed"] > 20:
+            alarms.append({
+                "type": "STRONG_WIND",
+                "severity": "high",
+                "message": f"Strong wind warning: {current_data['wind']['speed']} m/s",
+                "health_impact": "Danger from flying debris, secure loose objects and avoid outdoor activities"
+            })
+        elif current_data["wind"]["speed"] > 10:
+            alarms.append({
+                "type": "MODERATE_WIND",
+                "severity": "medium",
+                "message": f"Moderate wind alert: {current_data['wind']['speed']} m/s",
+                "health_impact": "Use caution when outdoors, especially for the elderly"
+            })
+        
+        # Rain alarms
+        rain_1h = current_data.get("rain", {}).get("1h", 0)
+        if rain_1h > 10:
+            alarms.append({
+                "type": "HEAVY_RAIN",
+                "severity": "high",
+                "message": f"Heavy rain warning: {rain_1h} mm in last hour",
+                "health_impact": "Potential for flooding, avoid flooded areas and driving in heavy rain"
+            })
+        elif rain_1h > 5:
+            alarms.append({
+                "type": "MODERATE_RAIN",
+                "severity": "medium",
+                "message": f"Moderate rain alert: {rain_1h} mm in last hour",
+                "health_impact": "Reduced visibility while driving, bring umbrella and waterproof clothing"
+            })
+        
+        # Visibility alarms
+        visibility = current_data.get("visibility", 10000) / 1000  # Convert to km
+        if visibility < 1:
+            alarms.append({
+                "type": "VERY_LOW_VISIBILITY",
+                "severity": "high",
+                "message": f"Very low visibility warning: {visibility} km",
+                "health_impact": "Extremely dangerous driving conditions, avoid travel if possible"
+            })
+        elif visibility < 5:
+            alarms.append({
+                "type": "LOW_VISIBILITY",
+                "severity": "medium",
+                "message": f"Low visibility alert: {visibility} km",
+                "health_impact": "Use caution when driving and allow extra travel time"
+            })
+        
+        # UV index - not available in your data, consider adding to API call if possible
+        
+        # Air quality - not available in current API, consider adding an air quality API
+        
+        # ----- Forecast Weather Alarms -----
+        
+        # Analyze forecast for upcoming severe weather
+        forecast_list = forecast_data["list"]
+        
+        # Temperature forecasts
+        max_temp_24h = max([f["main"]["temp"] for f in forecast_list[:8]])
+        min_temp_24h = min([f["main"]["temp"] for f in forecast_list[:8]])
+        
+        if max_temp_24h > 35:
+            alarms.append({
+                "type": "FORECAST_EXTREME_HEAT",
+                "severity": "high",
+                "message": f"Extreme heat forecast in next 24 hours: Up to {max_temp_24h}°C expected",
+                "health_impact": "Prepare for extreme heat conditions, ensure cooling and hydration"
+            })
+        
+        if min_temp_24h < 0:
+            alarms.append({
+                "type": "FORECAST_FREEZING",
+                "severity": "high",
+                "message": f"Freezing temperatures forecast in next 24 hours: Down to {min_temp_24h}°C expected",
+                "health_impact": "Prepare for freezing conditions, ensure heating and warm clothing"
+            })
+        
+        # Heavy rain forecasts
+        rain_forecasts = [f.get("rain", {}).get("3h", 0) for f in forecast_list[:8]]
+        if any(rain > 20 for rain in rain_forecasts):
+            alarms.append({
+                "type": "FORECAST_HEAVY_RAIN",
+                "severity": "high",
+                "message": "Heavy rain forecast in next 24 hours",
+                "health_impact": "Prepare for potential flooding and travel disruptions"
+            })
+        
+        # Strong wind forecasts
+        wind_forecasts = [f["wind"]["speed"] for f in forecast_list[:8]]
+        if any(wind > 20 for wind in wind_forecasts):
+            alarms.append({
+                "type": "FORECAST_STRONG_WIND",
+                "severity": "high",
+                "message": "Strong winds forecast in next 24 hours",
+                "health_impact": "Secure loose objects and prepare for potential power outages"
+            })
+        
+        # Check for extreme weather combinations (e.g., heavy rain + strong wind)
+        # This could indicate more severe storms
+        has_heavy_rain = any(rain > 10 for rain in rain_forecasts)
+        has_strong_wind = any(wind > 15 for wind in wind_forecasts)
+        
+        if has_heavy_rain and has_strong_wind:
+            alarms.append({
+                "type": "FORECAST_STORM",
+                "severity": "high",
+                "message": "Storm conditions (heavy rain and strong winds) forecast in next 24 hours",
+                "health_impact": "Stay indoors if possible, avoid travel, and prepare for power outages"
+            })
+        
+        # If we have alarms, publish them
+
+        logging.info(f"alarms: {alarms}")
+        
+        if alarms:
+            alarm_data = {
+                "location": location,
+                "timestamp": timestamp,
+                "alarm_count": len(alarms),
+                "alarms": alarms
+            }
+            
+            logging.info(f"Publishing {len(alarms)} weather alarms to MQTT")
+            self.mqtt_client.publish("/weather/alarms", json.dumps(alarm_data))
+            logging.info("Weather alarms published successfully")
+        else:
+            logging.info("No weather alarms detected")
+
+# Load the JSON files
+def load_mock_data():
+    try:
+        # Load current weather mock data
+        with open('current_alarms_mock.json', 'r') as current_file:
+            weather_response = json.load(current_file)
+            
+        # Load forecast mock data
+        with open('forecast_alarms_mock.json', 'r') as forecast_file:
+            forecast_response = json.load(forecast_file)
+            
+        print("Mock data loaded successfully!")
+        return weather_response, forecast_response
+    
+    except FileNotFoundError as e:
+        print(f"Error: File not found - {e}")
+        return None, None
+    
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON format - {e}")
+        return None, None
+    
+    except Exception as e:
+        print(f"Unexpected error loading mock data: {e}")
+        return None, None
+
+# Testing code
+def test_weather_alarms():
+    # Initialize your weather collector
+    weather_collector = WeatherDataCollector(
+        city=os.getenv('WEATHER_CITY', 'Auckland'),
+        mqtt_broker=os.getenv('MQTT_BROKER', 'comitup-401.local')
+    )
+    
+    # Load the mock data from JSON files
+    weather_response, forecast_response = load_mock_data()
+    
+    # Check if data was loaded successfully
+    if weather_response and forecast_response:
+        print("Analyzing and publishing alarms based on mock data...")
+        # Instead of fetching from API, use our mock data
+        weather_collector.analyze_and_publish_alarms(weather_response, forecast_response)
+        print("Alarm analysis and publishing completed!")
+    else:
+        print("Cannot analyze weather alarms due to missing or invalid mock data")
+    
+    # Close connections
+    weather_collector.close_connections()
 
 def main():
     logging.info("Weather data collection script started")
@@ -299,7 +540,7 @@ def main():
         # Use environment variables for configuration
         weather_collector = WeatherDataCollector(
             city=os.getenv('WEATHER_CITY', 'Auckland'),
-            mqtt_broker=os.getenv('MQTT_BROKER', '192.168.178.153')
+            mqtt_broker=os.getenv('MQTT_BROKER', 'comitup-401.local')
         )
         weather_collector.collect_weather_data()
     except Exception as e:
@@ -309,5 +550,22 @@ def main():
     logging.info("Weather data collection script completed")
 
 
+# Check command-line arguments to determine which function to run
 if __name__ == "__main__":
-    main()
+    # Configure logging (if not already done at the top of your script)
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler('weather_app.log'),
+            logging.StreamHandler()
+        ]
+    )
+    
+    # Check if "test" is passed as a command-line argument
+    if len(sys.argv) > 1 and sys.argv[1].lower() == "test":
+        logging.info("Running in test mode with mock data")
+        test_weather_alarms()
+    else:
+        logging.info("Running in normal operation mode")
+        main()

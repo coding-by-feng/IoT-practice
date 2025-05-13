@@ -1,0 +1,660 @@
+[
+    {
+        "id": "4be20a0f32ff34ea",
+        "type": "tab",
+        "label": "IoT Weather System V3",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "c58d1bb8ddb3efcd",
+        "type": "mqtt in",
+        "z": "4be20a0f32ff34ea",
+        "name": "Current Weather",
+        "topic": "/weather/current",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "20b23af4cf8d4823",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 160,
+        "wires": [
+            [
+                "d353124a72da25f8",
+                "8fad92084acb77f2"
+            ]
+        ]
+    },
+    {
+        "id": "d353124a72da25f8",
+        "type": "debug",
+        "z": "4be20a0f32ff34ea",
+        "name": "Show CW JSON",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 450,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "bc97443ccfd51a3c",
+        "type": "debug",
+        "z": "4be20a0f32ff34ea",
+        "name": "Show FW JSON",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 450,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "5044effe41c92eec",
+        "type": "mqtt in",
+        "z": "4be20a0f32ff34ea",
+        "name": "Forecast Weather",
+        "topic": "/weather/forecast",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "20b23af4cf8d4823",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 240,
+        "wires": [
+            [
+                "bc97443ccfd51a3c",
+                "2d0febe44a7223e2",
+                "559857a428805974",
+                "19a072a2c24c71c5"
+            ]
+        ]
+    },
+    {
+        "id": "8fad92084acb77f2",
+        "type": "function",
+        "z": "4be20a0f32ff34ea",
+        "name": "Process Current Weather",
+        "func": "// Prepare the data for dashboard display\nif (msg.payload) {\n    // Format the rainfall and snow data\n    let rainDisplay = 'No rain';\n    if (msg.payload.rain_1h && msg.payload.rain_1h > 0) {\n        rainDisplay = msg.payload.rain_1h.toFixed(2) + ' mm/h';\n    }\n\n    let snowDisplay = 'No snow';\n    if (msg.payload.snow_1h && msg.payload.snow_1h > 0) {\n        snowDisplay = msg.payload.snow_1h.toFixed(2) + ' mm/h';\n    }\n\n    // Format visibility (convert to km if >= 1000m)\n    let visibilityDisplay = 'Unknown';\n    if (msg.payload.visibility !== undefined) {\n        if (msg.payload.visibility >= 1000) {\n            visibilityDisplay = (msg.payload.visibility / 1000).toFixed(1) + ' km';\n        } else {\n            visibilityDisplay = msg.payload.visibility + ' m';\n        }\n    }\n\n    // Format cloud coverage\n    let cloudsDisplay = 'Unknown';\n    if (msg.payload.clouds_percent !== undefined) {\n        cloudsDisplay = msg.payload.clouds_percent + '%';\n    }\n\n    // Create formatted message for text display\n    msg.payload = {\n        location: msg.payload.location || 'Unknown',\n        temperature: msg.payload.temperature ? msg.payload.temperature.toFixed(1) + '°C' : 'N/A',\n        humidity: msg.payload.humidity ? msg.payload.humidity + '%' : 'N/A',\n        weather: msg.payload.weather_description || 'Unknown',\n        wind: msg.payload.wind_speed ? msg.payload.wind_speed.toFixed(1) + ' m/s' : 'N/A',\n        pressure: msg.payload.pressure ? msg.payload.pressure + ' hPa' : 'N/A',\n        timestamp: msg.payload.timestamp || 'Unknown',\n        rain: rainDisplay,\n        snow: snowDisplay,\n        visibility: visibilityDisplay,\n        clouds: cloudsDisplay\n    };\n\n    // Create additional outputs if needed\n    // For example, data for gauges and charts\n    msg.temperature = msg.payload.temperature;\n    msg.humidity = msg.payload.humidity;\n    msg.rainfall = msg.payload.rain_1h || 0;\n    msg.snowfall = msg.payload.snow_1h || 0;\n    msg.visibility = msg.payload.visibility;\n    msg.clouds = msg.payload.clouds_percent;\n\n    // Create status indicators for weather conditions\n    msg.isRaining = (msg.payload.rain_1h && msg.payload.rain_1h > 0);\n    msg.isSnowing = (msg.payload.snow_1h && msg.payload.snow_1h > 0);\n    msg.hasLowVisibility = (msg.payload.visibility && msg.payload.visibility < 1);\n\n    // Determine weather status for color-coded displays\n    if (msg.isRaining && msg.rainfall > 10) {\n        msg.weatherStatus = 'alert';\n    } else if (msg.isRaining || msg.isSnowing) {\n        msg.weatherStatus = 'warning';\n    } else if (msg.hasLowVisibility) {\n        msg.weatherStatus = 'caution';\n    } else {\n        msg.weatherStatus = 'normal';\n    }\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 80,
+        "wires": [
+            [
+                "e9c4641c8b884bfb"
+            ]
+        ]
+    },
+    {
+        "id": "e9c4641c8b884bfb",
+        "type": "ui_template",
+        "z": "4be20a0f32ff34ea",
+        "group": "4da2a3f4a1b2b38d",
+        "name": "Current Weather Display",
+        "order": 1,
+        "width": 6,
+        "height": 12,
+        "format": "<div class=\"current-weather-card\"\n    ng-class=\"{'rain-bg': msg.isRaining, 'snow-bg': msg.isSnowing, 'fog-bg': msg.hasLowVisibility}\">\n    <div class=\"weather-header\">\n        <h3>{{msg.payload.location}}</h3>\n    </div>\n    <div class=\"weather-content\">\n        <div class=\"temperature-display\">\n            <div class=\"temperature\">{{msg.payload.temperature}}</div>\n            <div class=\"weather-condition\">\n                <span class=\"weather-icon\" ng-if=\"msg.payload.weather.includes('clear')\">☀️</span>\n                <span class=\"weather-icon\" ng-if=\"msg.payload.weather.includes('cloud')\">⛅</span>\n                <span class=\"weather-icon\" ng-if=\"msg.payload.weather.includes('rain')\">🌧️</span>\n                <span class=\"weather-icon\" ng-if=\"msg.payload.weather.includes('snow')\">❄️</span>\n                <span class=\"weather-icon\" ng-if=\"msg.payload.weather.includes('storm')\">⛈️</span>\n                <span class=\"weather-icon\" ng-if=\"msg.payload.weather.includes('fog') || msg.payload.weather.includes('mist')\">🌫️</span>\n                {{msg.payload.weather}}\n            </div>\n        </div>\n\n        <!-- Main weather parameters -->\n        <div class=\"weather-details\">\n            <div class=\"detail-item\">\n                <span class=\"detail-icon\">💧</span>\n                <span class=\"detail-label\">Humidity:</span>\n                <span class=\"detail-value\">{{msg.payload.humidity}}</span>\n            </div>\n            <div class=\"detail-item\">\n                <span class=\"detail-icon\">🌬️</span>\n                <span class=\"detail-label\">Wind:</span>\n                <span class=\"detail-value\">{{msg.payload.wind}}</span>\n            </div>\n            <div class=\"detail-item\">\n                <span class=\"detail-icon\">🔄</span>\n                <span class=\"detail-label\">Pressure:</span>\n                <span class=\"detail-value\">{{msg.payload.pressure}}</span>\n            </div>\n\n            <!-- Added precipitation details -->\n            <div class=\"detail-group precipitation-group\" ng-if=\"msg.isRaining || msg.isSnowing\">\n                <div class=\"group-header\">Precipitation</div>\n                <div class=\"detail-item\" ng-if=\"msg.isRaining\">\n                    <span class=\"detail-icon\">🌧️</span>\n                    <span class=\"detail-label\">Rainfall:</span>\n                    <span class=\"detail-value highlight\">{{msg.payload.rain}}</span>\n                </div>\n                <div class=\"detail-item\" ng-if=\"msg.isSnowing\">\n                    <span class=\"detail-icon\">❄️</span>\n                    <span class=\"detail-label\">Snowfall:</span>\n                    <span class=\"detail-value highlight\">{{msg.payload.snow}}</span>\n                </div>\n            </div>\n\n            <!-- Added visibility and clouds details -->\n            <div class=\"detail-group extended-group\">\n                <div class=\"group-header\">Additional Info</div>\n                <div class=\"detail-item\" ng-class=\"{'highlight-item': msg.hasLowVisibility}\">\n                    <span class=\"detail-icon\">👁️</span>\n                    <span class=\"detail-label\">Visibility:</span>\n                    <span class=\"detail-value\" ng-class=\"{'highlight': msg.hasLowVisibility}\">{{msg.payload.visibility}}</span>\n                </div>\n                <div class=\"detail-item\">\n                    <span class=\"detail-icon\">☁️</span>\n                    <span class=\"detail-label\">Cloud Cover:</span>\n                    <span class=\"detail-value\">{{msg.payload.clouds}}</span>\n                </div>\n            </div>\n        </div>\n\n        <!-- Alert banner for significant weather conditions -->\n        <div class=\"weather-alert\"\n            ng-if=\"msg.weatherStatus === 'warning' || msg.weatherStatus === 'alert' || msg.weatherStatus === 'caution'\">\n            <div class=\"alert-icon\">⚠️</div>\n            <div class=\"alert-message\">\n                <span ng-if=\"msg.isRaining && msg.rainfall > 10\">Heavy rainfall detected</span>\n                <span ng-if=\"msg.isRaining && msg.rainfall <= 10\">Rainfall detected</span>\n                <span ng-if=\"msg.isSnowing\">Snowfall detected</span>\n                <span ng-if=\"msg.hasLowVisibility\">Low visibility conditions</span>\n            </div>\n        </div>\n    </div>\n    <div class=\"weather-footer\">\n        <span>{{msg.payload.timestamp}}</span>\n    </div>\n</div>\n\n<style>\n    .current-weather-card {\n        padding: 16px;\n        background: linear-gradient(135deg, #72b1e6, #4a8fcb);\n        color: white;\n        border-radius: 12px;\n        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);\n        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n        margin: 0;\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        transition: background 0.5s ease;\n    }\n\n    /* Background variations based on weather conditions */\n    .current-weather-card.rain-bg {\n        background: linear-gradient(135deg, #5c88a6, #2e5475);\n    }\n\n    .current-weather-card.snow-bg {\n        background: linear-gradient(135deg, #8eb5cd, #5d88a8);\n    }\n\n    .current-weather-card.fog-bg {\n        background: linear-gradient(135deg, #94a5b3, #5e7c91);\n    }\n\n    .weather-header {\n        margin-bottom: 16px;\n        text-align: center;\n    }\n\n    .weather-header h2 {\n        margin: 0;\n        font-size: 1.6em;\n        font-weight: 600;\n        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);\n    }\n\n    .weather-header h3 {\n        margin: 6px 0 0 0;\n        font-size: 1.2em;\n        font-weight: 400;\n        opacity: 0.9;\n    }\n\n    .weather-content {\n        display: flex;\n        flex-direction: column;\n        flex-grow: 1;\n        gap: 20px;\n    }\n\n    .temperature-display {\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        margin-bottom: 12px;\n    }\n\n    .temperature {\n        font-size: 3.2em;\n        font-weight: 700;\n        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);\n        margin-bottom: 5px;\n    }\n\n    .weather-condition {\n        font-size: 1.4em;\n        text-transform: capitalize;\n        opacity: 0.9;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        gap: 8px;\n    }\n\n    .weather-icon {\n        font-size: 1.2em;\n    }\n\n    .weather-details {\n        display: flex;\n        flex-direction: column;\n        gap: 12px;\n        background-color: rgba(255, 255, 255, 0.15);\n        border-radius: 10px;\n        padding: 15px;\n    }\n\n    .detail-item {\n        display: flex;\n        align-items: center;\n        padding: 5px 0;\n    }\n\n    .detail-icon {\n        font-size: 1.2em;\n        margin-right: 10px;\n        min-width: 24px;\n    }\n\n    .detail-label {\n        font-weight: 500;\n        min-width: 100px;\n    }\n\n    .detail-value {\n        font-weight: 600;\n    }\n\n    .detail-value.highlight {\n        color: #ffeb3b;\n        text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);\n    }\n\n    .highlight-item {\n        background-color: rgba(255, 255, 255, 0.1);\n        border-radius: 5px;\n        padding: 5px 8px !important;\n    }\n\n    .detail-group {\n        margin-top: 10px;\n        padding-top: 10px;\n        border-top: 1px solid rgba(255, 255, 255, 0.2);\n    }\n\n    .group-header {\n        font-size: 0.9em;\n        text-transform: uppercase;\n        letter-spacing: 1px;\n        opacity: 0.8;\n        margin-bottom: 10px;\n    }\n\n    .precipitation-group {\n        background-color: rgba(255, 255, 255, 0.1);\n        border-radius: 8px;\n        padding: 10px;\n        margin-top: 15px;\n    }\n\n    .extended-group {\n        margin-top: 15px;\n    }\n\n    .weather-alert {\n        display: flex;\n        align-items: center;\n        background-color: rgba(255, 217, 0, 0.2);\n        border-left: 4px solid #ffd900;\n        padding: 12px;\n        border-radius: 8px;\n        margin-top: 5px;\n    }\n\n    .alert-icon {\n        font-size: 1.5em;\n        margin-right: 12px;\n    }\n\n    .alert-message {\n        font-weight: 500;\n    }\n\n    .weather-footer {\n        margin-top: 16px;\n        text-align: center;\n        font-size: 0.85em;\n        opacity: 0.8;\n    }\n\n    .update-time {\n        background-color: rgba(0, 0, 0, 0.15);\n        padding: 5px 12px;\n        border-radius: 15px;\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 710,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "64ab8c900a1229cc",
+        "type": "ui_chart",
+        "z": "4be20a0f32ff34ea",
+        "name": "Temperature Forecast",
+        "group": "0d9d8ed71ef3a909",
+        "order": 1,
+        "width": 12,
+        "height": 7,
+        "label": "Temperature Forecast (°C)",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm",
+        "interpolate": "bezier",
+        "nodata": "Waiting for forecast data...",
+        "dot": true,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5",
+            "#000000",
+            "#000000"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1200,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "12e45591e6b42fd9",
+        "type": "ui_template",
+        "z": "4be20a0f32ff34ea",
+        "group": "6b0cba5b953a90ef",
+        "name": "Daily Forecast Table",
+        "order": 1,
+        "width": 20,
+        "height": 12,
+        "format": "<div class=\"forecast-container\">\n    <div class=\"forecast-table-wrapper\">\n        <table class=\"forecast-table\">\n            <thead>\n                <tr>\n                    <th>Date Time</th>\n                    <th>Temperature</th>\n                    <th>Conditions</th>\n                    <th>Humidity</th>\n                    <th>Pressure</th>\n                    <th>Wind Speed</th>\n                    <th>Rain</th>\n                    <th>Snow</th>\n                    <th>Visibility</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr ng-repeat=\"day in msg.payload\"\n                    ng-class=\"{ 'rain-day': day.description.includes('rain'), 'snow-day': day.description.includes('snow'), 'low-visibility-day': parseFloat(day.visibility) < 5 }\">\n                    <td class=\"date-cell\">{{day.date}}</td>\n                    <td class=\"temp-cell\">{{day.temperature}}</td>\n                    <td class=\"conditions-cell\">\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('clear')\">☀️</span>\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('cloud')\">⛅</span>\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('rain')\">🌧️</span>\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('snow')\">❄️</span>\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('storm')\">⛈️</span>\n                        <span class=\"weather-icon\" ng-if=\"day.description.includes('fog') || day.description.includes('mist')\">🌫️</span>\n                        <span class=\"conditions-text\">{{day.description}}</span>\n                    </td>\n                    <td class=\"humidity-cell\">{{day.humidity}}</td>\n                    <td class=\"pressure-cell\">{{day.pressure}}</td>\n                    <td class=\"wind-cell\">{{day.wind}}</td>\n                    <td class=\"rain-cell\">{{day.rain}}</td>\n                    <td class=\"snow-cell\">{{day.snow}}</td>\n                    <td class=\"visibility-cell\">{{day.visibility}}</td>\n                </tr>\n            </tbody>\n        </table>\n    </div>\n</div>\n\n<style>\n    .forecast-container {\n        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n        background: linear-gradient(to bottom, #f8f9fa, #e9ecef);\n        border-radius: 12px;\n        padding: 20px;\n        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n    }\n\n    .forecast-title {\n        text-align: center;\n        margin: 0 0 20px 0;\n        color: #395B7E;\n        font-size: 1.6em;\n        font-weight: 600;\n        border-bottom: 2px solid #d1e3f6;\n        padding-bottom: 10px;\n    }\n\n    .forecast-table-wrapper {\n        overflow-x: auto;\n        flex-grow: 1;\n    }\n\n    .forecast-table {\n        width: 100%;\n        border-collapse: separate;\n        border-spacing: 0;\n        border-radius: 8px;\n        overflow: hidden;\n        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);\n    }\n\n    .forecast-table th {\n        background-color: #4c87c5;\n        color: white;\n        font-weight: 600;\n        padding: 14px 10px;\n        text-align: left;\n        font-size: 1.05em;\n        position: sticky;\n        top: 0;\n    }\n\n    .forecast-table tbody tr {\n        background-color: white;\n        transition: background-color 0.2s;\n    }\n\n    .forecast-table tbody tr:nth-child(even) {\n        background-color: #f8fafc;\n    }\n\n    .forecast-table tbody tr:hover {\n        background-color: #f0f7ff;\n    }\n\n    .forecast-table td {\n        padding: 14px 10px;\n        border-bottom: 1px solid #eaedf0;\n        font-size: 1.05em;\n    }\n\n    .date-cell {\n        font-weight: 600;\n        color: #2c3e50;\n        min-width: 100px;\n    }\n\n    .temp-cell {\n        font-weight: 600;\n        color: #e67e22;\n        min-width: 90px;\n    }\n\n    .conditions-cell {\n        min-width: 180px;\n        display: flex;\n        align-items: center;\n    }\n\n    .weather-icon {\n        font-size: 1.3em;\n        margin-right: 8px;\n    }\n\n    .conditions-text {\n        text-transform: capitalize;\n    }\n\n    .humidity-cell,\n    .wind-cell,\n    .rain-cell {\n        color: #3498db;\n        min-width: 100px;\n    }\n\n    /* New styles for added columns */\n    .pressure-cell {\n        color: #8e44ad;\n        min-width: 100px;\n    }\n\n    .snow-cell {\n        color: #34ace0;\n        min-width: 100px;\n        font-weight: 500;\n    }\n\n    .visibility-cell {\n        color: #2c3e50;\n        min-width: 100px;\n    }\n\n    .rain-day {\n        background-color: #f0f8ff !important;\n    }\n\n    /* New condition-based highlighting */\n    .snow-day {\n        background-color: #f0faff !important;\n    }\n\n    .low-visibility-day {\n        background-color: #f7f7f7 !important;\n    }\n\n    .forecast-legend {\n        display: flex;\n        justify-content: center;\n        gap: 20px;\n        margin-top: 15px;\n        font-size: 0.9em;\n        color: #555;\n    }\n\n    .legend-item {\n        display: flex;\n        align-items: center;\n        gap: 5px;\n    }\n\n    .clear-icon,\n    .clouds-icon,\n    .rain-icon {\n        font-size: 1.2em;\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1200,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "516d0a55e6b012c5",
+        "type": "ui_template",
+        "z": "4be20a0f32ff34ea",
+        "group": "f2f8e5c5b53ac3a5",
+        "name": "Dashboard Styling",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<style>\n    /* Set default browser width to 70% */\n    #main {\n        width: 70% !important;\n        margin: 0 auto !important;\n    }\n\n    /* Main Dashboard Styling */\n    body.nr-dashboard-theme md-content md-card {\n        background-color: #ffffff;\n        border-radius: 12px;\n        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);\n        overflow: hidden;\n        margin-bottom: 16px;\n    }\n    \n    /* Group titles styling */\n    .custom-group .nr-dashboard-cardtitle {\n        background: linear-gradient(135deg, #4a8fcb, #62a5dd);\n        color: white !important;\n        padding: 14px 16px;\n        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n        font-size: 1.3em;\n        font-weight: 500;\n        text-transform: none;\n        border-bottom: none;\n        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);\n    }\n    \n    /* Improve chart styling */\n    .nr-dashboard-chart {\n        padding: 16px;\n        background-color: white;\n    }\n    \n    .nr-dashboard-chart .ct-label {\n        font-size: 12px;\n        color: #555;\n    }\n    \n    .ct-grid {\n        stroke: rgba(0, 0, 0, 0.1);\n        stroke-width: 1px;\n    }\n    \n    /* Improve overall spacing */\n    .layout-row>.flex, .layout-row>.flex {\n        margin: 8px;\n    }\n    \n    /* Dashboard background */\n    #container {\n        background-color: #f8f9fb;\n    }\n    \n    /* Dashboard title */\n    .md-toolbar-tools h1 {\n        font-size: 1.5em !important;\n        font-weight: 600 !important;\n        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;\n    }\n    \n    .md-toolbar-tools {\n        background: linear-gradient(135deg, #3779b5, #4d93cc);\n        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);\n    }\n    \n    /* Make weather charts nicer */\n    #chart {\n        fill: none;\n    }\n\n    /* Responsive behavior - maintain 70% width on larger screens */\n    @media (min-width: 768px) {\n        #main {\n            width: 70% !important;\n            margin: 0 auto !important;\n        }\n    }\n    \n    /* On smaller screens, use full width */\n    @media (max-width: 767px) {\n        #main {\n            width: 100% !important;\n        }\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "global",
+        "className": "",
+        "x": 1190,
+        "y": 460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0e43f8928ffcc815",
+        "type": "debug",
+        "z": "4be20a0f32ff34ea",
+        "name": "Chart Data Debug (Temp)",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 750,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "2d0febe44a7223e2",
+        "type": "function",
+        "z": "4be20a0f32ff34ea",
+        "name": "Process Forecast Data",
+        "func": "// Extract the forecast items\nconst forecastItems = msg.payload.forecast_items;\n\n// Sort the data by forecast_time\nconst sortedData = [...forecastItems].sort((a, b) => {\n    const dateA = new Date(a.forecast_time).getTime();\n    const dateB = new Date(b.forecast_time).getTime();\n    return dateA - dateB;\n});\n\nconst labels = sortedData.map(item => {\n    const date = new Date(item.forecast_time);\n    // Format as \"Day HH:mm\" - e.g. \"Tue 14:00\"\n    const day = date.toLocaleDateString([], {weekday: 'short'});\n    const time = date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});\n    return `${day} ${time}`;\n});\n\n// Prepare the data series (just temperature in this case)\nconst temperatures = sortedData.map(item => item.temperature);\n\n// Create the chart data object structure required by the chart node\nmsg.payload = [{\n    \"series\": [\"Temperature\"],\n    \"data\": [temperatures],\n    \"labels\": labels\n}];\n\n// Add location for the title\nmsg.location = msg.payload.location || \"Auckland\";\n\n// Add extra data for tooltips or additional display\nmsg.descriptions = sortedData.map(item => item.weather_description);\nmsg.humidity = sortedData.map(item => item.humidity);\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 300,
+        "wires": [
+            [
+                "0e43f8928ffcc815",
+                "64ab8c900a1229cc"
+            ]
+        ]
+    },
+    {
+        "id": "559857a428805974",
+        "type": "function",
+        "z": "4be20a0f32ff34ea",
+        "name": "Format for Precipitation Bar Chart",
+        "func": "// Extract the forecast items from the input JSON\nconst forecastItems = msg.payload.forecast_items;\n\n// Create data structure for the chart\nconst chartData = [\n    {\n        \"series\": [\"Rain (mm)\", \"Snow (mm)\"],\n        \"data\": [\n            [], // Rain data array\n            []  // Snow data array\n        ],\n        \"labels\": []\n    }\n];\n\n// Process each forecast item\nforecastItems.forEach(item => {\n    // Format the time for display\n    // Extract just the date and hour\n    const forecastDate = new Date(item.forecast_time);\n    const timeLabel = forecastDate.toLocaleString('en-GB', {\n        month: 'short',\n        day: 'numeric',\n        hour: '2-digit',\n        minute: '2-digit'\n    });\n    \n    // Add the time label\n    chartData[0].labels.push(timeLabel);\n    \n    // Add the rain and snow values\n    // rain_3h and snow_3h are in mm, so we can use them directly\n    chartData[0].data[0].push(item.rain_3h || 0); // Rain\n    chartData[0].data[1].push(item.snow_3h || 0); // Snow\n});\n\n// Set the payload to the chart data\nmsg.payload = chartData;\n\n// Return the message\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 360,
+        "wires": [
+            [
+                "f77f483d0624db65",
+                "46994daf05bf5559"
+            ]
+        ]
+    },
+    {
+        "id": "f77f483d0624db65",
+        "type": "debug",
+        "z": "4be20a0f32ff34ea",
+        "name": "Debug Chart Data (Rain & Snow)",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 900,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "19a072a2c24c71c5",
+        "type": "function",
+        "z": "4be20a0f32ff34ea",
+        "name": "Format Forecast Table Data",
+        "func": "// Extract the forecast items from the input JSON\nconst forecastItems = msg.payload.forecast_items;\n\n// Create an array to hold the formatted data for the table\nconst tableData = [];\n\n// Function to create a more readable date format: Month Day, Day HH:MM\nfunction formatDateTime(dateTimeStr) {\n    const date = new Date(dateTimeStr);\n    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];\n    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];\n    \n    const day = days[date.getDay()];\n    const month = months[date.getMonth()];\n    const dayOfMonth = date.getDate();\n    const hours = date.getHours().toString().padStart(2, '0');\n    const minutes = date.getMinutes().toString().padStart(2, '0');\n    \n    return `${month} ${dayOfMonth}, ${day} ${hours}:${minutes}`;\n}\n\n// Function to format visibility in a more readable way (convert to km if ≥ 1000m)\nfunction formatVisibility(visibilityInMeters) {\n    if (!visibilityInMeters && visibilityInMeters !== 0) return \"N/A\";\n    \n    if (visibilityInMeters >= 1000) {\n        // Convert to kilometers with one decimal place for values ≥ 1000m\n        return `${(visibilityInMeters / 1000).toFixed(1)} km`;\n    } else {\n        // Keep in meters for values < 1000m\n        return `${visibilityInMeters} m`;\n    }\n}\n\n// Process each forecast item\nforecastItems.forEach(item => {\n    // Format temperature with unit\n    const tempC = item.temperature.toFixed(1);\n    \n    // Format humidity with unit\n    const humidity = `${item.humidity}%`;\n    \n    // Format wind with unit\n    const wind = `${item.wind_speed.toFixed(1)} m/s`;\n    \n    // Format rain\n    let rain = \"0 mm\";\n    if (item.rain_3h && item.rain_3h > 0) {\n        rain = `${item.rain_3h.toFixed(2)} mm`;\n    }\n    \n    // Format snow (added)\n    let snow = \"0 mm\";\n    if (item.snow_3h && item.snow_3h > 0) {\n        snow = `${item.snow_3h.toFixed(2)} mm`;\n    }\n    \n    // Format visibility (added)\n    const visibility = formatVisibility(item.visibility);\n    \n    // Format pressure (added) - convert hPa to kPa for readability if needed\n    const pressure = `${item.pressure} hPa`;\n    \n    // Push the formatted item to the table data array\n    tableData.push({\n        date: formatDateTime(item.forecast_time),\n        temperature: `${tempC}°C`,\n        description: item.weather_description,\n        humidity: humidity,\n        pressure: pressure,\n        wind: wind,\n        rain: rain,\n        snow: snow,\n        visibility: visibility\n    });\n});\n\n// Sort the table data by date\ntableData.sort((a, b) => {\n    return new Date(a.date).getTime() - new Date(b.date).getTime();\n});\n\n// Set the payload to the table data\nmsg.payload = tableData;\n\n// Return the message\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 420,
+        "wires": [
+            [
+                "dfbfb8b0375fce9c",
+                "12e45591e6b42fd9"
+            ]
+        ]
+    },
+    {
+        "id": "dfbfb8b0375fce9c",
+        "type": "debug",
+        "z": "4be20a0f32ff34ea",
+        "name": "Debug Table Data",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 850,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "46994daf05bf5559",
+        "type": "ui_chart",
+        "z": "4be20a0f32ff34ea",
+        "name": "Precipitation Forecast",
+        "group": "0d9d8ed71ef3a909",
+        "order": 2,
+        "width": 12,
+        "height": 6,
+        "label": "Rainfall & Snowfall Forecast (mm/3h)",
+        "chartType": "bar",
+        "legend": "true",
+        "xformat": "auto",
+        "interpolate": "linear",
+        "nodata": "No precipitation data",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "hour",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#6495ed",
+            "#2ca02c",
+            "#d62728",
+            "#9467bd",
+            "#8c564b",
+            "#e377c2",
+            "#7f7f7f",
+            "#bcbd22"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1200,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "066f7aad76db96da",
+        "type": "exec",
+        "z": "4be20a0f32ff34ea",
+        "command": "bash -c \"cd /home/comitup/IoT-Python-Code/IoT-practice && source venv/bin/activate && python3 weather_fetch.py\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "120",
+        "winHide": false,
+        "oldrc": false,
+        "name": "Fetch Weather Data Using Python",
+        "x": 560,
+        "y": 540,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "3231167e2d9e1b2d",
+        "type": "inject",
+        "z": "4be20a0f32ff34ea",
+        "name": "Fetching data",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 180,
+        "y": 540,
+        "wires": [
+            [
+                "066f7aad76db96da",
+                "6d434e7924072fad"
+            ]
+        ]
+    },
+    {
+        "id": "6d434e7924072fad",
+        "type": "debug",
+        "z": "4be20a0f32ff34ea",
+        "name": "Fetch Data",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 490,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "fd710b7ba820eeb9",
+        "type": "mqtt in",
+        "z": "4be20a0f32ff34ea",
+        "name": "Weather Alarm",
+        "topic": "/weather/alarms",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "20b23af4cf8d4823",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 680,
+        "wires": [
+            [
+                "d0595bfbe1f205dd",
+                "550b44f0126c1fad"
+            ]
+        ]
+    },
+    {
+        "id": "d0595bfbe1f205dd",
+        "type": "debug",
+        "z": "4be20a0f32ff34ea",
+        "name": "Show Alarms JSON",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 460,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "550b44f0126c1fad",
+        "type": "function",
+        "z": "4be20a0f32ff34ea",
+        "name": "Alarms Processer",
+        "func": "// Function to process and format weather alarms\nfunction processWeatherAlarms(msg) {\n    if (!msg.payload || !msg.payload.alarms || !Array.isArray(msg.payload.alarms)) {\n        node.warn(\"No valid alarm data found\");\n        return {};\n    }\n    \n    // Group alarms by severity\n    const highSeverity = msg.payload.alarms.filter(alarm => alarm.severity === \"high\");\n    const mediumSeverity = msg.payload.alarms.filter(alarm => alarm.severity === \"medium\");\n    const lowSeverity = msg.payload.alarms.filter(alarm => alarm.severity === \"low\");\n    \n    // Group alarms by type (current vs forecast)\n    const currentAlarms = msg.payload.alarms.filter(alarm => !alarm.type.startsWith(\"FORECAST_\"));\n    const forecastAlarms = msg.payload.alarms.filter(alarm => alarm.type.startsWith(\"FORECAST_\"));\n    \n    // Format alarms for dashboard display\n    const formattedAlarms = msg.payload.alarms.map((alarm, index) => {\n        return {\n            id: index + 1,\n            type: alarm.type.replace(\"FORECAST_\", \"\").replace(/_/g, \" \"),\n            severity: alarm.severity,\n            message: alarm.message,\n            health_impact: alarm.health_impact,\n            isForecast: alarm.type.startsWith(\"FORECAST_\"),\n            timestamp: msg.payload.timestamp\n        };\n    });\n    \n    // Sort alarms by severity (high first) and then by forecast (current before forecast)\n    formattedAlarms.sort((a, b) => {\n        // Sort by severity first\n        if (a.severity === \"high\" && b.severity !== \"high\") return -1;\n        if (a.severity !== \"high\" && b.severity === \"high\") return 1;\n        if (a.severity === \"medium\" && b.severity === \"low\") return -1;\n        if (a.severity === \"low\" && b.severity === \"medium\") return 1;\n        \n        // Then sort by forecast vs current\n        if (!a.isForecast && b.isForecast) return -1;\n        if (a.isForecast && !b.isForecast) return 1;\n        \n        return 0;\n    });\n    \n    // Create summary info\n    const alarmSummary = {\n        location: msg.payload.location,\n        timestamp: msg.payload.timestamp,\n        total_alarms: msg.payload.alarm_count,\n        high_severity_count: highSeverity.length,\n        medium_severity_count: mediumSeverity.length,\n        low_severity_count: lowSeverity.length,\n        current_alarms_count: currentAlarms.length,\n        forecast_alarms_count: forecastAlarms.length\n    };\n    \n    // Return both the formatted alarms and the summary\n    return { \n        payload: formattedAlarms,\n        summary: alarmSummary\n    };\n}\n\n// Process the incoming message\nconst result = processWeatherAlarms(msg);\nif (result) {\n    // Set output message\n    msg.payload = result.payload;\n    msg.summary = result.summary;\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 760,
+        "wires": [
+            [
+                "b59f48591255d928"
+            ]
+        ]
+    },
+    {
+        "id": "b59f48591255d928",
+        "type": "ui_template",
+        "z": "4be20a0f32ff34ea",
+        "group": "6b0cba5b953a90ef",
+        "name": "Alarms Table",
+        "order": 2,
+        "width": 20,
+        "height": 8,
+        "format": "<div class=\"weather-alarms-container\">\n    <div class=\"alarm-summary\">\n        <div class=\"summary-header\">\n            <h2>Weather Alerts for {{msg.summary.location}}</h2>\n            <div class=\"update-time\">Last updated: {{msg.summary.timestamp}}</div>\n        </div>\n        <div class=\"summary-counts\">\n            <div class=\"count-item high\">\n                <span class=\"count\">{{msg.summary.high_severity_count}}</span>\n                <span class=\"label\">High Severity</span>\n            </div>\n            <div class=\"count-item medium\">\n                <span class=\"count\">{{msg.summary.medium_severity_count}}</span>\n                <span class=\"label\">Medium Severity</span>\n            </div>\n            <div class=\"count-item low\">\n                <span class=\"count\">{{msg.summary.low_severity_count}}</span>\n                <span class=\"label\">Low Severity</span>\n            </div>\n            <div class=\"divider\"></div>\n            <div class=\"count-item current\">\n                <span class=\"count\">{{msg.summary.current_alarms_count}}</span>\n                <span class=\"label\">Current</span>\n            </div>\n            <div class=\"count-item forecast\">\n                <span class=\"count\">{{msg.summary.forecast_alarms_count}}</span>\n                <span class=\"label\">Forecast</span>\n            </div>\n        </div>\n    </div>\n\n    <div class=\"alarm-table-wrapper\">\n        <table class=\"alarm-table\">\n            <thead>\n                <tr>\n                    <th class=\"col-id\">#</th>\n                    <th class=\"col-type\">Alert Type</th>\n                    <th class=\"col-severity\">Severity</th>\n                    <th class=\"col-message\">Message</th>\n                    <th class=\"col-impact\">Health Impact</th>\n                    <th class=\"col-forecast\">Timeframe</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr ng-repeat=\"alarm in msg.payload\" ng-class=\"{'high-severity': alarm.severity === 'high', \n                              'medium-severity': alarm.severity === 'medium',\n                              'low-severity': alarm.severity === 'low',\n                              'forecast-row': alarm.isForecast}\">\n                    <td class=\"col-id\">{{alarm.id}}</td>\n                    <td class=\"col-type\">\n                        <div class=\"alert-icon\"\n                            ng-if=\"alarm.type.includes('TEMPERATURE') || alarm.type.includes('HEAT')\">🌡️</div>\n                        <div class=\"alert-icon\" ng-if=\"alarm.type.includes('FREEZING') || alarm.type.includes('COLD')\">\n                            ❄️</div>\n                        <div class=\"alert-icon\" ng-if=\"alarm.type.includes('RAIN')\">🌧️</div>\n                        <div class=\"alert-icon\" ng-if=\"alarm.type.includes('WIND')\">💨</div>\n                        <div class=\"alert-icon\" ng-if=\"alarm.type.includes('STORM')\">⛈️</div>\n                        <div class=\"alert-icon\" ng-if=\"alarm.type.includes('VISIBILITY')\">🌫️</div>\n                        <div class=\"alert-icon\" ng-if=\"alarm.type.includes('SNOW')\">❄️</div>\n                        {{alarm.type}}\n                    </td>\n                    <td class=\"col-severity\">\n                        <span class=\"severity-badge\" ng-class=\"alarm.severity\">\n                            {{alarm.severity}}\n                        </span>\n                    </td>\n                    <td class=\"col-message\">{{alarm.message}}</td>\n                    <td class=\"col-impact\">{{alarm.health_impact}}</td>\n                    <td class=\"col-forecast\">\n                        <span ng-if=\"alarm.isForecast\" class=\"forecast-badge\">Forecast</span>\n                        <span ng-if=\"!alarm.isForecast\" class=\"current-badge\">Current</span>\n                    </td>\n                </tr>\n            </tbody>\n        </table>\n    </div>\n</div>\n\n<style>\n    .weather-alarms-container {\n        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n        background-color: #f8f9fa;\n        border-radius: 12px;\n        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);\n        padding: 20px;\n        height: 100%;\n        display: flex;\n        flex-direction: column;\n        margin-bottom: 10px;\n    }\n\n    .alarm-summary {\n        margin-bottom: 20px;\n        background-color: white;\n        border-radius: 10px;\n        padding: 16px;\n        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);\n    }\n\n    .summary-header {\n        display: flex;\n        justify-content: space-between;\n        align-items: center;\n        margin-bottom: 15px;\n        border-bottom: 1px solid #e9ecef;\n        padding-bottom: 12px;\n    }\n\n    .summary-header h2 {\n        margin: 0;\n        color: #395B7E;\n        font-size: 1.5em;\n        font-weight: 600;\n    }\n\n    .update-time {\n        color: #6c757d;\n        font-size: 0.9em;\n    }\n\n    .summary-counts {\n        display: flex;\n        justify-content: space-around;\n        flex-wrap: wrap;\n    }\n\n    .count-item {\n        display: flex;\n        flex-direction: column;\n        align-items: center;\n        padding: 10px 15px;\n        border-radius: 8px;\n        min-width: 80px;\n    }\n\n    .count {\n        font-size: 1.8em;\n        font-weight: 700;\n        margin-bottom: 5px;\n    }\n\n    .label {\n        font-size: 0.9em;\n        color: #495057;\n    }\n\n    .high .count {\n        color: #dc3545;\n    }\n\n    .medium .count {\n        color: #fd7e14;\n    }\n\n    .low .count {\n        color: #20c997;\n    }\n\n    .current .count {\n        color: #0d6efd;\n    }\n\n    .forecast .count {\n        color: #6610f2;\n    }\n\n    .divider {\n        width: 2px;\n        background-color: #dee2e6;\n        margin: 0 10px;\n    }\n\n    .alarm-table-wrapper {\n        overflow-y: auto;\n        flex-grow: 1;\n        background-color: white;\n        border-radius: 10px;\n        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);\n    }\n\n    .alarm-table {\n        width: 100%;\n        border-collapse: collapse;\n    }\n\n    .alarm-table th {\n        position: sticky;\n        top: 0;\n        background-color: #4c87c5;\n        color: white;\n        padding: 12px 15px;\n        text-align: left;\n        font-weight: 600;\n        z-index: 10;\n    }\n\n    .alarm-table td {\n        padding: 12px 15px;\n        border-bottom: 1px solid #e9ecef;\n    }\n\n    .alarm-table tbody tr:hover {\n        background-color: #f8f9fa;\n    }\n\n    /* Column widths */\n    .col-id {\n        width: 40px;\n        text-align: center;\n    }\n\n    .col-type {\n        width: 150px;\n    }\n\n    .col-severity {\n        width: 110px;\n    }\n\n    .col-forecast {\n        width: 100px;\n        text-align: center;\n    }\n\n    .alert-icon {\n        display: inline-block;\n        margin-right: 8px;\n        font-size: 1.2em;\n    }\n\n    .severity-badge {\n        display: inline-block;\n        padding: 4px 8px;\n        border-radius: 4px;\n        font-weight: 600;\n        font-size: 0.85em;\n        text-transform: uppercase;\n        text-align: center;\n        min-width: 80px;\n    }\n\n    .severity-badge.high {\n        background-color: rgba(220, 53, 69, 0.15);\n        color: #dc3545;\n        border: 1px solid rgba(220, 53, 69, 0.3);\n    }\n\n    .severity-badge.medium {\n        background-color: rgba(255, 193, 7, 0.15);\n        color: #fd7e14;\n        border: 1px solid rgba(255, 193, 7, 0.3);\n    }\n\n    .severity-badge.low {\n        background-color: rgba(32, 201, 151, 0.15);\n        color: #20c997;\n        border: 1px solid rgba(32, 201, 151, 0.3);\n    }\n\n    .forecast-badge,\n    .current-badge {\n        display: inline-block;\n        padding: 4px 8px;\n        border-radius: 4px;\n        font-weight: 600;\n        font-size: 0.85em;\n    }\n\n    .forecast-badge {\n        background-color: rgba(102, 16, 242, 0.15);\n        color: #6610f2;\n        border: 1px solid rgba(102, 16, 242, 0.3);\n    }\n\n    .current-badge {\n        background-color: rgba(13, 110, 253, 0.15);\n        color: #0d6efd;\n        border: 1px solid rgba(13, 110, 253, 0.3);\n    }\n\n    /* Row styling based on severity and forecast */\n    .high-severity {\n        background-color: rgba(220, 53, 69, 0.05);\n    }\n\n    .medium-severity {\n        background-color: rgba(255, 193, 7, 0.05);\n    }\n\n    .low-severity {\n        background-color: rgba(32, 201, 151, 0.05);\n    }\n\n    .forecast-row {\n        font-style: italic;\n    }\n\n    /* Responsive adjustments */\n    @media (max-width: 768px) {\n        .col-impact {\n            display: none;\n        }\n\n        .summary-counts {\n            flex-direction: column;\n            align-items: center;\n        }\n\n        .count-item {\n            margin-bottom: 10px;\n        }\n\n        .divider {\n            width: 80%;\n            height: 1px;\n            margin: 10px 0;\n        }\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 770,
+        "y": 760,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e93aa447638524aa",
+        "type": "inject",
+        "z": "4be20a0f32ff34ea",
+        "name": "Clean Alarms",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{}",
+        "payloadType": "json",
+        "x": 490,
+        "y": 820,
+        "wires": [
+            [
+                "b59f48591255d928"
+            ]
+        ]
+    },
+    {
+        "id": "ab6032debcc884b0",
+        "type": "exec",
+        "z": "4be20a0f32ff34ea",
+        "command": "bash -c \"cd /home/comitup/IoT-Python-Code/IoT-practice && source venv/bin/activate && python3 weather_fetch.py test\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "120",
+        "winHide": false,
+        "oldrc": false,
+        "name": "Fetch Weather Data Using Python",
+        "x": 560,
+        "y": 900,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "a681c21e185649ae",
+        "type": "inject",
+        "z": "4be20a0f32ff34ea",
+        "name": "Test Alarms",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 190,
+        "y": 900,
+        "wires": [
+            [
+                "ab6032debcc884b0"
+            ]
+        ]
+    },
+    {
+        "id": "20b23af4cf8d4823",
+        "type": "mqtt-broker",
+        "name": "Personal IoT Broker",
+        "broker": "localhost",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "4da2a3f4a1b2b38d",
+        "type": "ui_group",
+        "name": "Current Conditions",
+        "tab": "f2f8e5c5b53ac3a5",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": "custom-group"
+    },
+    {
+        "id": "0d9d8ed71ef3a909",
+        "type": "ui_group",
+        "name": "Weather Charts",
+        "tab": "f2f8e5c5b53ac3a5",
+        "order": 3,
+        "disp": true,
+        "width": "12",
+        "collapse": false,
+        "className": "custom-group"
+    },
+    {
+        "id": "6b0cba5b953a90ef",
+        "type": "ui_group",
+        "name": "Daily Forecast & Alarms",
+        "tab": "f2f8e5c5b53ac3a5",
+        "order": 2,
+        "disp": true,
+        "width": "20",
+        "collapse": false,
+        "className": "custom-group"
+    },
+    {
+        "id": "f2f8e5c5b53ac3a5",
+        "type": "ui_tab",
+        "name": "Weather Dashboard",
+        "icon": "wi-day-sunny",
+        "disabled": false,
+        "hidden": false
+    }
+]
