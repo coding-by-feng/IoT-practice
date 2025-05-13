@@ -71,7 +71,11 @@ class WeatherDataCollector:
                 wind_speed REAL,
                 location TEXT,
                 weather_description TEXT,
-                device_label TEXT
+                device_label TEXT,
+                rain_1h REAL,
+                snow_1h REAL,
+                clouds_percent INTEGER,
+                visibility INTEGER
             )
         ''')
 
@@ -132,7 +136,7 @@ class WeatherDataCollector:
             # Set Auckland time zone
             auckland_tz = pytz.timezone('Pacific/Auckland')
             # Get current time in Auckland
-            timestamp = datetime.now(auckland_tz).now().strftime("%Y-%m-%d %H:%M:%S")
+            timestamp = datetime.now(auckland_tz).strftime("%Y-%m-%d %H:%M:%S")
             city_name = response["city"]["name"]
             forecast_list = response["list"]
 
@@ -193,7 +197,6 @@ class WeatherDataCollector:
             }
             self.mqtt_client.publish("/weather/forecast", json.dumps(forecast_package))
             logging.info(f"Forecast data for {city_name} processed successfully")
-            logging.info(f"Handled forecast weather data: {forecast_package}")
 
         except (KeyError, IndexError) as e:
             logging.error(f"Forecast Data Processing Error: {e}")
@@ -213,7 +216,16 @@ class WeatherDataCollector:
             # Set Auckland time zone
             auckland_tz = pytz.timezone('Pacific/Auckland')
             # Get current time in Auckland
-            timestamp = datetime.now(auckland_tz).now().strftime("%Y-%m-%d %H:%M:%S")
+            timestamp = datetime.now(auckland_tz).strftime("%Y-%m-%d %H:%M:%S")
+
+            # Extract rain and snow values (which might not be present)
+            # OpenWeatherMap API provides rain and snow in a nested structure
+            rain_1h = response.get("rain", {}).get("1h", 0)
+            snow_1h = response.get("snow", {}).get("1h", 0)
+            
+            # Extract clouds percentage and visibility
+            clouds_percent = response.get("clouds", {}).get("all", 0)
+            visibility = response.get("visibility", 0)
 
             data = {
                 "timestamp": timestamp,
@@ -223,7 +235,11 @@ class WeatherDataCollector:
                 "wind_speed": response["wind"]["speed"],
                 "location": response["name"],
                 "weather_description": response["weather"][0]["description"],
-                "device_label": "RPi_WeatherStation"
+                "device_label": "RPi_WeatherStation",
+                "rain_1h": rain_1h,
+                "snow_1h": snow_1h,
+                "clouds_percent": clouds_percent,
+                "visibility": visibility
             }
 
             # Insert into SQLite
@@ -231,11 +247,12 @@ class WeatherDataCollector:
             self.cursor.execute(
                 """INSERT INTO weather_data 
                 (timestamp, temperature, humidity, pressure, wind_speed, location, 
-                weather_description, device_label) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                weather_description, device_label, rain_1h, snow_1h, clouds_percent, visibility) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (timestamp, data["temperature"], data["humidity"],
-                 data["pressure"], data['wind_speed'], data["location"],
-                 data["weather_description"], data["device_label"])
+                data["pressure"], data['wind_speed'], data["location"],
+                data["weather_description"], data["device_label"], data["rain_1h"],
+                data["snow_1h"], data["clouds_percent"], data["visibility"])
             )
             self.conn.commit()
 
