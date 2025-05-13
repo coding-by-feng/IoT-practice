@@ -6,6 +6,7 @@ import sqlite3
 import paho.mqtt.client as mqtt
 from datetime import datetime
 from dotenv import load_dotenv
+import pytz
 
 # Configure logging
 logging.basicConfig(
@@ -128,7 +129,10 @@ class WeatherDataCollector:
 
         try:
             # Use a fixed timestamp for data collection time
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # Set Auckland time zone
+            auckland_tz = pytz.timezone('Pacific/Auckland')
+            # Get current time in Auckland
+            timestamp = datetime.now(auckland_tz).now().strftime("%Y-%m-%d %H:%M:%S")
             city_name = response["city"]["name"]
             forecast_list = response["list"]
 
@@ -206,7 +210,10 @@ class WeatherDataCollector:
 
         try:
             # Use a fixed timestamp format for consistency
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # Set Auckland time zone
+            auckland_tz = pytz.timezone('Pacific/Auckland')
+            # Get current time in Auckland
+            timestamp = datetime.now(auckland_tz).now().strftime("%Y-%m-%d %H:%M:%S")
 
             data = {
                 "timestamp": timestamp,
