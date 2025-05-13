@@ -67,6 +67,7 @@ class WeatherDataCollector:
                 temperature REAL,
                 humidity REAL,
                 pressure REAL,
+                wind_speed REAL,
                 location TEXT,
                 weather_description TEXT,
                 device_label TEXT
@@ -78,7 +79,6 @@ class WeatherDataCollector:
             CREATE TABLE IF NOT EXISTS weather_forecast (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 forecast_time TEXT,
-                timestamp TEXT,
                 temperature REAL,
                 humidity REAL,
                 pressure REAL,
@@ -128,7 +128,7 @@ class WeatherDataCollector:
 
         try:
             # Use a fixed timestamp for data collection time
-            timestamp = "2023-10-01T12:00:00Z"
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             city_name = response["city"]["name"]
             forecast_list = response["list"]
 
@@ -149,7 +149,6 @@ class WeatherDataCollector:
                 
                 forecast_item = {
                     "forecast_time": forecast_time,
-                    "timestamp": timestamp,
                     "temperature": forecast["main"]["temp"],
                     "humidity": forecast["main"]["humidity"],
                     "pressure": forecast["main"]["pressure"],
@@ -167,10 +166,10 @@ class WeatherDataCollector:
                 # Insert each forecast period into database
                 self.cursor.execute(
                     """INSERT INTO weather_forecast 
-                    (forecast_time, timestamp, temperature, humidity, pressure, location, 
+                    (forecast_time, temperature, humidity, pressure, location, 
                     weather_description, wind_speed, clouds_percent, rain_3h, snow_3h, visibility, device_label) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (forecast_time, timestamp, forecast_item["temperature"],
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (forecast_time, forecast_item["temperature"],
                      forecast_item["humidity"], forecast_item["pressure"],
                      forecast_item["location"], forecast_item["weather_description"],
                      forecast_item["wind_speed"], forecast_item["clouds_percent"],
@@ -190,6 +189,7 @@ class WeatherDataCollector:
             }
             self.mqtt_client.publish("/weather/forecast", json.dumps(forecast_package))
             logging.info(f"Forecast data for {city_name} processed successfully")
+            logging.info(f"Handled forecast weather data: {forecast_package}")
 
         except (KeyError, IndexError) as e:
             logging.error(f"Forecast Data Processing Error: {e}")
@@ -202,15 +202,18 @@ class WeatherDataCollector:
             logging.warning("No current weather data to process")
             return
 
+        logging.info(f"Raw current weather data: {response}")
+
         try:
             # Use a fixed timestamp format for consistency
-            timestamp = "2023-10-01T12:00:00Z"
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
             data = {
                 "timestamp": timestamp,
                 "temperature": response["main"]["temp"],
                 "humidity": response["main"]["humidity"],
                 "pressure": response["main"]["pressure"],
+                "wind_speed": response["wind"]["speed"],
                 "location": response["name"],
                 "weather_description": response["weather"][0]["description"],
                 "device_label": "RPi_WeatherStation"
@@ -220,11 +223,11 @@ class WeatherDataCollector:
             logging.info(f"Inserting current weather data into database for {data['location']}")
             self.cursor.execute(
                 """INSERT INTO weather_data 
-                (timestamp, temperature, humidity, pressure, location, 
+                (timestamp, temperature, humidity, pressure, wind_speed, location, 
                 weather_description, device_label) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                 (timestamp, data["temperature"], data["humidity"],
-                 data["pressure"], data["location"],
+                 data["pressure"], data['wind_speed'], data["location"],
                  data["weather_description"], data["device_label"])
             )
             self.conn.commit()

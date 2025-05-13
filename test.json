@@ -1,0 +1,83 @@
+{'location': 'Auckland', 'timestamp': '2023-10-01T12: 00: 00Z', 'forecast_count': 40, 'forecast_items': [
+        {'forecast_time': '2025-05-13 09: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 15.13, 'humidity': 83, 'pressure': 1021, 'location': 'Auckland', 'weather_description': 'overcast clouds', 'wind_speed': 3.98, 'clouds_percent': 100, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-13 12: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 15.1, 'humidity': 83, 'pressure': 1021, 'location': 'Auckland', 'weather_description': 'light rain', 'wind_speed': 4.61, 'clouds_percent': 100, 'rain_3h': 0.13, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-13 15: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 13.6, 'humidity': 83, 'pressure': 1020, 'location': 'Auckland', 'weather_description': 'broken clouds', 'wind_speed': 3.81, 'clouds_percent': 84, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-13 18: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 13.51, 'humidity': 87, 'pressure': 1021, 'location': 'Auckland', 'weather_description': 'light rain', 'wind_speed': 3.75, 'clouds_percent': 67, 'rain_3h': 0.11, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-13 21: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 15.75, 'humidity': 78, 'pressure': 1022, 'location': 'Auckland', 'weather_description': 'light rain', 'wind_speed': 3.9, 'clouds_percent': 88, 'rain_3h': 0.19, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-14 00: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 18.29, 'humidity': 57, 'pressure': 1022, 'location': 'Auckland', 'weather_description': 'scattered clouds', 'wind_speed': 3.13, 'clouds_percent': 42, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-14 03: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 17.99, 'humidity': 54, 'pressure': 1021, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 2.53, 'clouds_percent': 1, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-14 06: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 14.52, 'humidity': 73, 'pressure': 1023, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 1, 'clouds_percent': 2, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-14 09: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 13.55, 'humidity': 79, 'pressure': 1025, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 1.01, 'clouds_percent': 1, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-14 12: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 12.56, 'humidity': 83, 'pressure': 1025, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 0.63, 'clouds_percent': 2, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-14 15: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 11.82, 'humidity': 87, 'pressure': 1024, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 0.43, 'clouds_percent': 4, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-14 18: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 11.73, 'humidity': 86, 'pressure': 1024, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 1.22, 'clouds_percent': 6, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-14 21: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 14.09, 'humidity': 75, 'pressure': 1026, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 1.24, 'clouds_percent': 3, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-15 00: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 17.6, 'humidity': 60, 'pressure': 1024, 'location': 'Auckland', 'weather_description': 'scattered clouds', 'wind_speed': 2.9, 'clouds_percent': 34, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-15 03: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 17.23, 'humidity': 56, 'pressure': 1023, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 4.1, 'clouds_percent': 5, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-15 06: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 13.9, 'humidity': 73, 'pressure': 1024, 'location': 'Auckland', 'weather_description': 'scattered clouds', 'wind_speed': 2.42, 'clouds_percent': 44, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-15 09: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 12.7, 'humidity': 80, 'pressure': 1025, 'location': 'Auckland', 'weather_description': 'overcast clouds', 'wind_speed': 1.57, 'clouds_percent': 85, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-15 12: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 12.51, 'humidity': 82, 'pressure': 1026, 'location': 'Auckland', 'weather_description': 'broken clouds', 'wind_speed': 1.82, 'clouds_percent': 67, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-15 15: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 12.66, 'humidity': 89, 'pressure': 1026, 'location': 'Auckland', 'weather_description': 'broken clouds', 'wind_speed': 2.03, 'clouds_percent': 74, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-15 18: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 12.89, 'humidity': 91, 'pressure': 1026, 'location': 'Auckland', 'weather_description': 'scattered clouds', 'wind_speed': 2.15, 'clouds_percent': 42, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-15 21: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 15.27, 'humidity': 82, 'pressure': 1028, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 2.52, 'clouds_percent': 4, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-16 00: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 18.49, 'humidity': 68, 'pressure': 1027, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 3.51, 'clouds_percent': 9, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-16 03: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 18.2, 'humidity': 71, 'pressure': 1026, 'location': 'Auckland', 'weather_description': 'scattered clouds', 'wind_speed': 3.46, 'clouds_percent': 34, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-16 06: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 15.01, 'humidity': 88, 'pressure': 1026, 'location': 'Auckland', 'weather_description': 'scattered clouds', 'wind_speed': 2.33, 'clouds_percent': 25, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-16 09: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 13.93, 'humidity': 91, 'pressure': 1027, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 1.46, 'clouds_percent': 9, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-16 12: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 13.28, 'humidity': 91, 'pressure': 1027, 'location': 'Auckland', 'weather_description': 'few clouds', 'wind_speed': 1.13, 'clouds_percent': 11, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-16 15: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 12.81, 'humidity': 91, 'pressure': 1026, 'location': 'Auckland', 'weather_description': 'few clouds', 'wind_speed': 0.72, 'clouds_percent': 11, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-16 18: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 12.31, 'humidity': 93, 'pressure': 1026, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 0.19, 'clouds_percent': 9, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-16 21: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 14.05, 'humidity': 87, 'pressure': 1027, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 0.58, 'clouds_percent': 5, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-17 00: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 17.18, 'humidity': 70, 'pressure': 1026, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 2.82, 'clouds_percent': 4, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-17 03: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 17.54, 'humidity': 68, 'pressure': 1024, 'location': 'Auckland', 'weather_description': 'few clouds', 'wind_speed': 4.37, 'clouds_percent': 15, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-17 06: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 15.42, 'humidity': 79, 'pressure': 1023, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 3.87, 'clouds_percent': 10, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-17 09: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 15.75, 'humidity': 85, 'pressure': 1023, 'location': 'Auckland', 'weather_description': 'clear sky', 'wind_speed': 4.74, 'clouds_percent': 1, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-17 12: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 16.08, 'humidity': 79, 'pressure': 1021, 'location': 'Auckland', 'weather_description': 'scattered clouds', 'wind_speed': 4.76, 'clouds_percent': 47, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-17 15: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 15.99, 'humidity': 82, 'pressure': 1020, 'location': 'Auckland', 'weather_description': 'overcast clouds', 'wind_speed': 4.7, 'clouds_percent': 100, 'rain_3h': 0, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-17 18: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 15.75, 'humidity': 90, 'pressure': 1018, 'location': 'Auckland', 'weather_description': 'light rain', 'wind_speed': 5.11, 'clouds_percent': 100, 'rain_3h': 0.52, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-17 21: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 16.51, 'humidity': 94, 'pressure': 1017, 'location': 'Auckland', 'weather_description': 'light rain', 'wind_speed': 7, 'clouds_percent': 100, 'rain_3h': 2.92, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-18 00: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 16.82, 'humidity': 93, 'pressure': 1017, 'location': 'Auckland', 'weather_description': 'light rain', 'wind_speed': 4.9, 'clouds_percent': 100, 'rain_3h': 2.47, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-18 03: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 17.25, 'humidity': 92, 'pressure': 1016, 'location': 'Auckland', 'weather_description': 'light rain', 'wind_speed': 4.66, 'clouds_percent': 99, 'rain_3h': 0.72, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        },
+        {'forecast_time': '2025-05-18 06: 00: 00', 'timestamp': '2023-10-01T12: 00: 00Z', 'temperature': 16.92, 'humidity': 95, 'pressure': 1016, 'location': 'Auckland', 'weather_description': 'light rain', 'wind_speed': 3.3, 'clouds_percent': 93, 'rain_3h': 0.39, 'snow_3h': 0, 'visibility': 10000, 'device_label': 'RPi_WeatherStation'
+        }
+    ]
+}
