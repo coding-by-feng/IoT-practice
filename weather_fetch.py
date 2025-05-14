@@ -324,14 +324,14 @@ class WeatherDataCollector:
         # ----- Current Weather Alarms -----
         
         # Temperature alarms - extreme heat
-        if current_data["main"]["temp"] > 35:
+        if current_data["main"]["temp"] > 37:
             alarms.append({
                 "type": "EXTREME_HEAT",
                 "severity": "high",
                 "message": f"Extreme heat warning: Temperature at {current_data['main']['temp']}°C",
                 "health_impact": "Risk of heat stroke and dehydration, stay hydrated and avoid sun exposure"
             })
-        elif current_data["main"]["temp"] > 30:
+        elif current_data["main"]["temp"] > 35:
             alarms.append({
                 "type": "HIGH_TEMPERATURE",
                 "severity": "medium",
