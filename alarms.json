@@ -1,0 +1,61 @@
+{
+    "location": "Auckland",
+    "timestamp": "2025-05-13 23:30:15",
+    "alarm_count": 9,
+    "alarms": [
+        {
+            "type": "HIGH_TEMPERATURE",
+            "severity": "medium",
+            "message": "High temperature alert: 32.5\u00b0C",
+            "health_impact": "Stay hydrated and avoid prolonged sun exposure"
+        },
+        {
+            "type": "MODERATE_WIND",
+            "severity": "medium",
+            "message": "Moderate wind alert: 12.5 m/s",
+            "health_impact": "Use caution when outdoors, especially for the elderly"
+        },
+        {
+            "type": "MODERATE_RAIN",
+            "severity": "medium",
+            "message": "Moderate rain alert: 8.2 mm in last hour",
+            "health_impact": "Reduced visibility while driving, bring umbrella and waterproof clothing"
+        },
+        {
+            "type": "LOW_VISIBILITY",
+            "severity": "medium",
+            "message": "Low visibility alert: 2.0 km",
+            "health_impact": "Use caution when driving and allow extra travel time"
+        },
+        {
+            "type": "FORECAST_EXTREME_HEAT",
+            "severity": "high",
+            "message": "Extreme heat forecast in next 24 hours: Up to 36.2\u00b0C expected",
+            "health_impact": "Prepare for extreme heat conditions, ensure cooling and hydration"
+        },
+        {
+            "type": "FORECAST_FREEZING",
+            "severity": "high",
+            "message": "Freezing temperatures forecast in next 24 hours: Down to -2.3\u00b0C expected",
+            "health_impact": "Prepare for freezing conditions, ensure heating and warm clothing"
+        },
+        {
+            "type": "FORECAST_HEAVY_RAIN",
+            "severity": "high",
+            "message": "Heavy rain forecast in next 24 hours",
+            "health_impact": "Prepare for potential flooding and travel disruptions"
+        },
+        {
+            "type": "FORECAST_STRONG_WIND",
+            "severity": "high",
+            "message": "Strong winds forecast in next 24 hours",
+            "health_impact": "Secure loose objects and prepare for potential power outages"
+        },
+        {
+            "type": "FORECAST_STORM",
+            "severity": "high",
+            "message": "Storm conditions (heavy rain and strong winds) forecast in next 24 hours",
+            "health_impact": "Stay indoors if possible, avoid travel, and prepare for power outages"
+        }
+    ]
+}
